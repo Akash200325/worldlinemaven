@@ -2,7 +2,7 @@ pipeline {
     agent any
     
     environment {
-        SONAR_HOST_URL = 'http://localhost:9000'  // Make sure the URL is correct
+        SONAR_HOST_URL = 'http://localhost:9000'  // Ensure the URL is correct
         SONAR_PROJECT_KEY = 'worldlinemaven'
         SONAR_PROJECT_NAME = 'worldlinemaven'
         SONAR_TOKEN = credentials('sonar-token')
@@ -22,14 +22,15 @@ pipeline {
 
         stage('Build and Verify') {
             steps {
-                bat '''
-                mvn clean verify
-                '''
+                bat 'mvn clean verify'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
+                // Debugging step to print the SonarQube URL
+                bat 'echo SONAR_HOST_URL=${SONAR_HOST_URL}'
+                
                 bat '''
                 mvn sonar:sonar ^
                     -Dsonar.projectKey=${SONAR_PROJECT_KEY} ^
