@@ -2,21 +2,21 @@ pipeline {
     agent any
     
     environment {
-        SONAR_HOST_URL = 'http://localhost:9000'
+        SONAR_HOST_URL = 'http://localhost:9000'  // Make sure the URL is correct
         SONAR_PROJECT_KEY = 'worldlinemaven'
         SONAR_PROJECT_NAME = 'worldlinemaven'
-        SONAR_TOKEN = credentials('sonar-token')  // Accessing the SonarQube token stored in Jenkins credentials
+        SONAR_TOKEN = credentials('sonar-token')
     }
     
     tools {
-        maven 'Maven 3.8.5'  // Use the name configured in Jenkins for Maven
-        jdk 'jdk17'          // Use the name configured in Jenkins for JDK 17
+        maven 'Maven 3.8.5'  // Ensure Maven is configured correctly
+        jdk 'jdk17'          // Ensure JDK 17 is configured correctly
     }
 
     stages {
         stage('Checkout') {
             steps {
-                checkout scm  // This will checkout the source code from the repository
+                checkout scm
             }
         }
 
