@@ -1,46 +1,55 @@
 pipeline {
     agent any
-
+    
+    environment {
+        SONAR_HOST_URL = 'http://localhost:9000'
+        SONAR_PROJECT_KEY = 'worldlinemaven'
+        SONAR_PROJECT_NAME = 'worldlinemaven'
+        SONAR_TOKEN = credentials('sonar-token')  // Accessing the SonarQube token stored in Jenkins credentials
+    }
+    
     tools {
         maven 'Maven 3.8.5'  // Use the name configured in Jenkins for Maven
         jdk 'jdk17'          // Use the name configured in Jenkins for JDK 17
     }
 
-    environment {
-        SONAR_HOST_URL = 'http://localhost:9000'
-        SONAR_PROJECT_KEY = 'worldlinemaven'
-        SONAR_PROJECT_NAME = 'worldlinemaven'
-        SONAR_TOKEN = 'sqp_6d679f0454286a0a8dfc13d75ba8b9985edc9792'
-    }
-
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/Akash200325/worldlinemaven.git'
+                checkout scm  // This will checkout the source code from the repository
             }
         }
 
-        stage('Build and Analyze') {
+        stage('Build and Verify') {
             steps {
-                script {
-                    bat """
-                    mvn clean verify sonar:sonar ^
-                        -Dsonar.projectKey=${env.SONAR_PROJECT_KEY} ^
-                        -Dsonar.projectName=${env.SONAR_PROJECT_NAME} ^
-                        -Dsonar.host.url=${env.SONAR_HOST_URL} ^
-                        -Dsonar.token=${env.SONAR_TOKEN}
-                    """
-                }
+                bat '''
+                mvn clean verify
+                '''
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                bat '''
+                mvn sonar:sonar ^
+                    -Dsonar.projectKey=${SONAR_PROJECT_KEY} ^
+                    -Dsonar.projectName=${SONAR_PROJECT_NAME} ^
+                    -Dsonar.host.url=${SONAR_HOST_URL} ^
+                    -Dsonar.token=${SONAR_TOKEN}
+                '''
             }
         }
     }
 
     post {
         success {
-            echo 'Build and SonarQube analysis succeeded.'
+            echo 'Pipeline completed successfully'
         }
         failure {
-            echo 'Build or SonarQube analysis failed.'
+            echo 'Pipeline failed'
+        }
+        always {
+            echo 'This runs regardless of the result.'
         }
     }
 }
