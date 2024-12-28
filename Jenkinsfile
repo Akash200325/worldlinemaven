@@ -1,55 +1,46 @@
 pipeline {
     agent any
 
-    environment {
-        // Define SonarQube server and token as environment variables
-        SONAR_HOST_URL = 'http://localhost:9000'
-        SONAR_TOKEN = 'sqp_6d679f0454286a0a8dfc13d75ba8b9985edc9792'
-        SONAR_PROJECT_KEY = 'worldlinemaven'
-        SONAR_PROJECT_NAME = 'worldlinemaven'
+    tools {
+        maven 'Maven 3.8.5'  // Use the name configured in Jenkins for Maven
+        jdk 'JDK 17'         // Make sure JDK 17 is also configured in Jenkins
     }
 
-    tools {
-        // Use Maven tool configured in Jenkins
-        maven 'M3'  // Replace 'M3' with the name of your Maven installation in Jenkins
+    environment {
+        SONAR_HOST_URL = 'http://localhost:9000'
+        SONAR_PROJECT_KEY = 'worldlinemaven'
+        SONAR_PROJECT_NAME = 'worldlinemaven'
+        SONAR_TOKEN = 'sqp_6d679f0454286a0a8dfc13d75ba8b9985edc9792'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Checkout the code from your repository
-                checkout scm
+                git 'https://github.com/Akash200325/worldlinemaven.git'
             }
         }
 
-        stage('Build & Verify') {
+        stage('Build and Analyze') {
             steps {
-                // Clean and verify the Maven project
-                bat 'mvn clean verify'
-            }
-        }
-
-        stage('SonarQube Analysis') {
-            steps {
-                // Run SonarQube analysis using the bat command for Windows
-                bat """
-                    mvn sonar:sonar ^
-                      -Dsonar.projectKey=${SONAR_PROJECT_KEY} ^
-                      -Dsonar.projectName=${SONAR_PROJECT_NAME} ^
-                      -Dsonar.host.url=${SONAR_HOST_URL} ^
-                      -Dsonar.token=${SONAR_TOKEN}
-                """
+                script {
+                    bat """
+                    mvn clean verify sonar:sonar ^
+                        -Dsonar.projectKey=${env.SONAR_PROJECT_KEY} ^
+                        -Dsonar.projectName=${env.SONAR_PROJECT_NAME} ^
+                        -Dsonar.host.url=${env.SONAR_HOST_URL} ^
+                        -Dsonar.token=${env.SONAR_TOKEN}
+                    """
+                }
             }
         }
     }
 
     post {
         success {
-            echo 'Pipeline completed successfully.'
+            echo 'Build and SonarQube analysis succeeded.'
         }
-
         failure {
-            echo 'Pipeline failed.'
+            echo 'Build or SonarQube analysis failed.'
         }
     }
 }
